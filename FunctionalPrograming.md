@@ -10,11 +10,11 @@
 | Application | (\<func\>)\<var of func\> | (λx.x)a |
 
 ## Church numerals
-ZERO (0) = λf.λx.x
-SUCC = λn.λf.λx.(f((nf)x))  
-ONE   = SUCC(0) = λf.λx.(fx)
-TWO   = SUCC(1) = λf.λx.(f(fx))
-THREE = SUCC(2) = λf.λx.(f(f(fx)))
+- ZERO (0) = λf.λx.x
+- SUCC  = λn.λf.λx.(f((nf)x))  
+- ONE   = SUCC(0) = λf.λx.(fx)
+- TWO   = SUCC(1) = λf.λx.(f(fx))
+- THREE = SUCC(2) = λf.λx.(f(f(fx)))
 
 # Programming Concepts
 - **Record** : Structured, immutable data that groups related values.
