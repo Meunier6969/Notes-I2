@@ -25,21 +25,19 @@ THREE = SUCC(2) = λf.λx.(f(f(fx)))
 # FP Concepts/Principles
 **Pure function** : Function that depends only on it's inputs, without any side-effects. This means it's always predicatble, deterministic
 **Immutability** : Data doesn't change after being created
-**Higher-order function**
-**Currying**
-**Recursion**
+**Higher-order function** : Function that take and/or return another function
+**Currying** : Function that take multiple arguments, turned into a series of functions each taking one argument
+**Recursion** : Function calling itself
 
 # Scala
 ## Functions and primitives
 ```scala
-// Primitive expressions: represent the simplest elements
-// (and everything is an expression)
+// Primitive expressions: represent the simplest elements (and everything is an expression)
 1
 "hello"
 true
 
 // Expressions: more complex expressions can be created by combination using operators
-// https://scala-lang.org/api/3.x/scala/Int.html
 // In Scala, almost everything is an expression returning a value
 1 + 2
 "Hello, " ++ "World"
@@ -79,12 +77,9 @@ val z = 41
 
 // Mutable (reminder: we will prefer immutable values during the course)
 var z2 = 41
-z2
 z2 = 42
-z2
 
 // Immutable collections
-// https://www.scala-lang.org/api/2.12.7/scala/collection/immutable/List.html
 val xs = List(1, 2, 3)
 
 // The list `ys` is mutable even if bound to a `val`
@@ -142,7 +137,7 @@ identity(1) + identity(2)
 
 def square(a: Int): Int = a * a
 
-def predecessor(b: Int): Int = b -1
+def predecessor(b: Int): Int = b - 1
 
 sumOf(2, 3, square)
 sumOf(2, 3, predecessor)
@@ -236,3 +231,148 @@ def execConstantByName(t: => Long) = 35221213909789L
 
 execConstantByName(time())
 ```
+
+## Type system
+See [Scala 3 — Book : Variance](https://docs.scala-lang.org/scala3/book/types-variance.html)
+
+Scala is statically-typed, and allows constraints on generic typing.
+- `def function[T](arg: T): Unit = ...`
+    - T represent an invariant type.
+- `def function[+T](arg: T): Unit = ...`
+    - T represent a covariant type.
+- `def function[-T](arg: T): Unit = ...`
+    - T represent a contravariant type. 
+- `def function[T <: A](arg: T): Unit = ...`
+    - T represent a subtype of A. 
+- `def function[T >: A](arg: T): Unit = ...`
+    - T represent a supertype of A. 
+- `def function[T: A](arg: T): Unit = ...`
+    - T represent a type that implements the trait A. 
+
+## List representation
+List are chained nodes, which are either Nil, or an element and another list :
+
+`List(1, 2, 3) == 1 :: (2 :: (3 :: Nil))`
+
+# RATTRAPAGE, TEST EXAM
+## A - True or False
+1. Programming languages are always tied to a specific paradigm. **False**
+2. The type Null in Scala 3 is a subtype of every reference type.  **True *(but not of value type)***
+3. The type Nothing in Scala 3 is a subtype of every other type. **True**
+4. Scala 3's Try represents a computation that may either result in an exception, or return a value. **True**
+5. In Scala 3, the Unit type is used to represent methods that do not return a value. **True**
+6. Recursion is preferred over loops for iterating through collections. **True**
+7. Scala 3 supports tail-call optimisation. **True**
+8. Pure functions cannot have internal hidden states that affect their behaviour. **True**
+9. Immutability means that once a data structure is created, its internal state cannot change. **True**
+10. A mutable collection can be covariant without causing issues related to type safety. **False**
+11. In Scala 3, for-comprehensions can only be used with List. **False**
+12. Functors preserve the structure of a container while applying a function to its elements. **True**
+
+## B. Fill in the missing parts
+1. Implement the function filterEven that takes a list of integers and returns a new list containing only the even numbers. Use a method provided by the Scala standard library on Lists in the body. Complete the two usages of this function.
+```scala
+def filterEven(numbers: List[Int]): List[Int] =
+    numbers.filter(n => n % 2 == 0)
+    
+filterEven(List(1, 3, 5, 9)) shouldBe List()
+filterEven(List()) shouldBe List()
+```
+
+2.Implement the function filterSeven that takes a list of integers and returns a new list containingonly the numbers that are multiple of seven. Complete the two usages of this function.
+```scala
+def filterSeven(xs: List[Int]): List[Int] = xs match
+    case Nil => Nil
+    case head :: tail if (head % 7 == 0) => head :: filterSeven(tail)
+    case _ :: tail => filterSeven(tail)
+    
+filterSeven(List(14, 11, 35, 36, 21, 9)) shouldBe List(14, 35, 21)
+filterSeven(List()) shouldBe List()
+```
+
+3. Complete the following expressions. Consider Either is right biased.
+```scala
+Right(41).map((x: Int) => x + 1) shouldBe Right(42)
+Right(4).flatMap((x: Int) => Right(x * x)) shouldBe Right(16)
+Left("oops").map((x: Int) => x + 1) shouldBe Left("oops")
+Right(24).filterOrElse(x => x % 2 == 1, "even") shouldBe Left("even")
+```
+
+4. Complete the for-comprehension expression, evaluation result and equivalent expression (?)
+```scala
+val result1: List[Int] = for {
+    a <- List(1, 2, 3, 4)
+    b <- Some(4) if (b + a) % 2 == 1
+} yield a * b
+
+result1 shouldBe List(4, 12)
+
+List(1, 2, 3, 4).flatMap(a =>
+    Some(4).filter(b => (b + a) % 2 == 1).map(b => a * b)
+) shouldBe result1
+```
+
+5. Complete the missing types in the function `sumF` signature. Complete the usage of the sumId and sumSquare functions.
+```scala
+def sumF(f: Int => Int, xs: List[Int]): Int =
+    xs.map(x => f(x)).sum
+
+def sumId(xs: List[Int]) = sumF(x => x, xs)
+def sumSquare(xs: List[Int]) = sumF(x => x * x, xs)
+
+sumId(List(41, 1)) shouldBe 42
+sumSquare(List(5, 4)) + 1 shouldBe 42
+```
+
+## C. Answer as clearly and as completely as you can
+1. Write a tail recursive function `last` that returns an `Option` containing the last element of the List if it exists. See usages below:
+```scala
+last(List("a","b","c","d")) == Some("d")
+last(Nil) == None
+
+@tailrec
+final def last[T](xs: List[T]): Option[T] =
+    xs match
+        case Nil => None
+        case y :: Nil => Some(y)
+        case y :: ys => last(ys)
+```
+
+2. Write a tail recursive function `nth` that returns an `Option` containing the element of the List at index i if it exists. See usages below:
+```scala
+nth(List("a","b","c","d","e"), 2) == Some("c")
+nth(List("a"), 2) == None
+nth(Nil, 0) == None
+
+@tailrec
+final def nth[T](xs: List[T], i: Int): Option[T] =
+    xs match 
+        case Nil => None
+        case y :: _ if i == 0 => Some(y)
+        case y :: ys => nth(ys, i - 1)
+```
+
+3. Write a tail recursive function reverse that returns the original List with its elements in reverse order. See usages below:
+```scala
+reverse(List("a","b","c")) == List("c","b","a")
+reverse(Nil) == Nil
+
+final def reverse[T](xs: List[T]): List[T] = {
+    @tailrec
+    def loop(ys: List[T], acc: List[T]): List[T] =
+        ys match
+            case Nil => acc
+            case y :: ys => loop(ys, y :: acc)
+        
+    loop(xs, List())
+}
+```
+
+4. Explain what is tail recursion and its main benefit.
+
+Tail-recursion is a compiler optimization for recursive functions, which lets the computer reuse the same stack frame for each call of the function, leading to faster execution and no possibility of a stack overflow.
+
+It is applicable if the recursive call met 3 conditions:
+- It is the last instruction of the function
+- It carries all needed information (no side-effect)
+- It immediately returns
